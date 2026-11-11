@@ -176,4 +176,6 @@ export class ScheduleDto {
   @IsOptional()
   @IsIn(['REPORTING_CHAIN', 'ANY_FROM_LIST'])
   approverScope?: 'REPORTING_CHAIN' | 'ANY_FROM_LIST' | null;
+
+
 }

@@ -34,7 +34,7 @@ export class ScheduleService {
 
     @InjectRepository(Campus)
     private readonly campusRepository: Repository<Campus>,
-  ) {}
+  ) { }
 
   // ==========================================
   // GET AUTHENTICATED USER DETAILS
@@ -86,10 +86,10 @@ export class ScheduleService {
   // CREATE SCHEDULE
   // ==========================================
 
- async createForCampus(
-  dto: ScheduleDto,
-  user: any,
-): Promise<Schedule> {
+  async createForCampus(
+    dto: ScheduleDto,
+    user: any,
+  ): Promise<Schedule> {
     const { campusId, username } = this.getUserDetails(user);
 
     // 1. Check whether campus exists
@@ -134,6 +134,7 @@ export class ScheduleService {
       blockHolidays: true,
 
       interlockLoginLogout: false,
+
       maxAdvanceDays: 14,
 
       allowSatForMonday: false,
@@ -363,8 +364,8 @@ export class ScheduleService {
       errorNumber === 2627 ||
       /duplicate key|unique constraint/i.test(
         dbError.driverError?.message ??
-          dbError.message ??
-          '',
+        dbError.message ??
+        '',
       )
     );
   }

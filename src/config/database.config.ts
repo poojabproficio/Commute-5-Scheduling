@@ -9,18 +9,16 @@ export const databaseConfig = (
     type: 'mssql',
 
     host: configService.get<string>('DB_HOST'),
-
     port: Number(configService.get<string>('DB_PORT')),
-
     username: configService.get<string>('DB_USERNAME'),
-
     password: configService.get<string>('DB_PASSWORD'),
-
     database: configService.get<string>('DB_DATABASE'),
 
     autoLoadEntities: true,
-
     synchronize: false,
+
+    // Separate migration history for the Scheduling backend.
+    migrationsTableName: 'scheduling_migrations',
 
     logging: true,
 
@@ -30,4 +28,3 @@ export const databaseConfig = (
     },
   };
 };
- 

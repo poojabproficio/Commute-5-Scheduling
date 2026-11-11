@@ -55,4 +55,5 @@ campus!: Campus;
     @Column({ name: 'send_email_confirmation', type: 'bit', default: false }) sendEmailConfirmation!: boolean;
     @Column({ name: 'approval_enabled', type: 'bit', default: false }) approvalEnabled!: boolean;
     @Column({ name: 'approver_scope', type: 'varchar', length: 20, nullable: true })approverScope!: 'REPORTING_CHAIN' | 'ANY_FROM_LIST' | null;
+
 }

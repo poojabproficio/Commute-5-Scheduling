@@ -17,8 +17,8 @@ import { ScheduleDto } from './dto/scheduling.dto.js';
 
 import { Permissions } from '../common/decorators/permissions.decorator.js';
 import { PermissionsGuard } from '../common/guards/permission.guard.js';
-import { PermissionModule } from '../comman/enums/permission-module.enum.js';
-import { PermissionAction } from '../comman/enums/permission-action.enum.js';
+import { PermissionModule } from '../common/enums/permission-module.enum.js';
+import { PermissionAction } from '../common/enums/permission-action.enum.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 
 
