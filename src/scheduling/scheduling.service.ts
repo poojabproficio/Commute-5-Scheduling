@@ -152,6 +152,9 @@ export class ScheduleService {
       loginHoursPrior: null,
       logoutHoursPrior: null,
 
+      loginMinutesPrior: null,
+      logoutMinutesPrior: null,
+
       interlockScheduleAdhoc: false,
       revokeCancellation: false,
       sendEmailConfirmation: false,
@@ -169,10 +172,13 @@ export class ScheduleService {
       updated_by: username,
     });
 
-    // 5. Validate complete configuration
+    // 5. Clear irrelevant daily cutoff fields (same rules as update)
+    this.clearIrrelevantDailyFields(schedule);
+
+    // 6. Validate complete configuration
     this.validateSchedule(schedule);
 
-    // 6. Save record
+    // 7. Save record
     try {
       return await this.scheduleRepository.save(schedule);
     } catch (error) {
@@ -203,18 +209,7 @@ export class ScheduleService {
     Object.assign(schedule, dto);
 
     // 3. Clear irrelevant daily cutoff fields
-    if (!schedule.dailyCutoffEnabled) {
-      schedule.dailyCutoffType = null;
-      schedule.dailyCutoffDayOffset = null;
-      schedule.dailyCutoffTime = null;
-      schedule.loginHoursPrior = null;
-      schedule.logoutHoursPrior = null;
-    } else if (schedule.dailyCutoffType === 'TIME_OF_DAY') {
-      schedule.loginHoursPrior = null;
-      schedule.logoutHoursPrior = null;
-    } else if (schedule.dailyCutoffType === 'HOURS_PRIOR') {
-      schedule.dailyCutoffTime = null;
-    }
+    this.clearIrrelevantDailyFields(schedule);
 
     // 4. Update audit information
     schedule.updated_by = username;
@@ -224,6 +219,30 @@ export class ScheduleService {
 
     // 6. Save changes
     return this.scheduleRepository.save(schedule);
+  }
+
+  // ==========================================
+  // CLEAR IRRELEVANT DAILY CUTOFF FIELDS
+  // ==========================================
+
+  private clearIrrelevantDailyFields(schedule: Schedule): void {
+    if (!schedule.dailyCutoffEnabled) {
+      schedule.dailyCutoffType = null;
+      schedule.dailyCutoffDayOffset = null;
+      schedule.dailyCutoffTime = null;
+      schedule.loginHoursPrior = null;
+      schedule.logoutHoursPrior = null;
+      schedule.loginMinutesPrior = null;
+      schedule.logoutMinutesPrior = null;
+    } else if (schedule.dailyCutoffType === 'TIME_OF_DAY') {
+      schedule.loginHoursPrior = null;
+      schedule.logoutHoursPrior = null;
+      schedule.loginMinutesPrior = null;
+      schedule.logoutMinutesPrior = null;
+    } else if (schedule.dailyCutoffType === 'HOURS_PRIOR') {
+      schedule.dailyCutoffDayOffset = null;
+      schedule.dailyCutoffTime = null;
+    }
   }
 
   // ==========================================
@@ -276,6 +295,19 @@ export class ScheduleService {
       }
 
       if (schedule.dailyCutoffType === 'TIME_OF_DAY') {
+        // Day offset is mandatory for TIME_OF_DAY.
+        // 0 = Same calendar day.
+        // 1 = Previous calendar day.
+        if (
+          schedule.dailyCutoffDayOffset !== 0 &&
+          schedule.dailyCutoffDayOffset !== 1
+        ) {
+          throw new BadRequestException(
+            'Daily cutoff day offset must be 0 (same day) or 1 (previous day)',
+          );
+        }
+
+        // Cutoff time is mandatory.
         if (
           !schedule.dailyCutoffTime ||
           !this.isValidTime(schedule.dailyCutoffTime)
@@ -295,11 +327,27 @@ export class ScheduleService {
             'Valid login hours prior and logout hours prior are required for HOURS_PRIOR configuration',
           );
         }
+
+        // Minutes are optional (null is treated as 0) but must be 0-59.
+        if (
+          !this.isValidMinutes(schedule.loginMinutesPrior) ||
+          !this.isValidMinutes(schedule.logoutMinutesPrior)
+        ) {
+          throw new BadRequestException(
+            'Login and logout minutes prior must be between 0 and 59',
+          );
+        }
       } else {
         throw new BadRequestException(
           'Invalid daily cutoff type',
         );
       }
+    }
+
+    if (schedule.weeklyCutoffEnabled && schedule.dailyCutoffEnabled) {
+      throw new BadRequestException(
+        'Weekly cutoff and daily cutoff cannot both be enabled',
+      );
     }
 
     // 4. Validate advance scheduling days
@@ -308,26 +356,17 @@ export class ScheduleService {
         'Maximum advance days cannot be negative',
       );
     }
+  }
 
-    // 5. Validate approval configuration
-    if (
-      schedule.approvalEnabled &&
-      !schedule.approverScope
-    ) {
-      throw new BadRequestException(
-        'Approver scope is required when approval is enabled',
-      );
-    }
+  // ==========================================
+  // MINUTES VALIDATION
+  // ==========================================
 
-    // 6. Existing business restriction
-    if (
-      schedule.approvalEnabled &&
-      schedule.dailyCutoffEnabled
-    ) {
-      throw new BadRequestException(
-        'Approval cannot be enabled while daily cutoff is enabled',
-      );
-    }
+  private isValidMinutes(value: number | null | undefined): boolean {
+    return (
+      value == null ||
+      (Number.isInteger(value) && value >= 0 && value <= 59)
+    );
   }
 
   // ==========================================

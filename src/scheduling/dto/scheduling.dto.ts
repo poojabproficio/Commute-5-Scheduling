@@ -148,7 +148,17 @@ export class ScheduleDto {
   @Min(0)
   @Max(32767)
   logoutHoursPrior?: number | null;
+@IsOptional()
+@IsInt()
+@Min(0)
+@Max(59)
+loginMinutesPrior?: number | null;
 
+@IsOptional()
+@IsInt()
+@Min(0)
+@Max(59)
+logoutMinutesPrior?: number | null;
   // ==============================
   // SCHEDULING BEHAVIOUR
   // ==============================
