@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { databaseConfig } from './config/database.config.js';
 import { SchedulingModule } from './scheduling/scheduling.module.js';
+import { HolidayModule } from './holiday/holiday.module.js';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { SchedulingModule } from './scheduling/scheduling.module.js';
     }),
 
     SchedulingModule,
+    HolidayModule,
   ],
 })
 export class AppModule {}
