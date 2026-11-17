@@ -28,15 +28,9 @@ export class CreateHolidayDto {
 
   @IsString()
   @Matches(/^\d{4}-\d{2}-\d{2}$/, {
-    message: 'Start date must be in YYYY-MM-DD format',
+    message: 'Holiday date must be in YYYY-MM-DD format',
   })
-  startDate!: string;
-
-  @IsString()
-  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
-    message: 'End date must be in YYYY-MM-DD format',
-  })
-  endDate!: string;
+  date!: string;
 
   @IsIn(HOLIDAY_TYPES, {
     message: 'Holiday type must be NATIONAL, REGIONAL, COMPANY or OPTIONAL',
@@ -70,16 +64,9 @@ export class UpdateHolidayDto {
   @IsOptional()
   @IsString()
   @Matches(/^\d{4}-\d{2}-\d{2}$/, {
-    message: 'Start date must be in YYYY-MM-DD format',
+    message: 'Holiday date must be in YYYY-MM-DD format',
   })
-  startDate?: string;
-
-  @IsOptional()
-  @IsString()
-  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
-    message: 'End date must be in YYYY-MM-DD format',
-  })
-  endDate?: string;
+  date?: string;
 
   @IsOptional()
   @IsIn(HOLIDAY_TYPES, {

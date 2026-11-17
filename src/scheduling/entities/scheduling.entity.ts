@@ -9,7 +9,7 @@ import { Campus } from '../../campus/entities/campus.entity.js';
 
 
 /** One set of scheduling settings belongs to one campus. */
-@Entity('schedule')
+@Entity('scheduling_configuration')
 
 export class Schedule extends BaseAuditEntity {
   @Column({ name: 'campus_id', type: 'int' })

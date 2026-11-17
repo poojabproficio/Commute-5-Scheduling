@@ -1,7 +1,6 @@
 
 import {
   BadRequestException,
-  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -13,7 +12,10 @@ import { IsNull, Repository } from 'typeorm';
 import { Campus } from '../campus/entities/campus.entity.js';
 
 import { Holiday } from './entities/holiday.entity/holiday.entity.js';
-import { CreateHolidayDto, UpdateHolidayDto } from './dto/holiday.dto/holiday.dto.js';
+import {
+  CreateHolidayDto,
+  UpdateHolidayDto,
+} from './dto/holiday.dto/holiday.dto.js';
 
 @Injectable()
 export class HolidayService {
@@ -81,29 +83,10 @@ export class HolidayService {
     );
   }
 
-  // ==========================================
-  // VALIDATE HOLIDAY DATES
-  // ==========================================
-
-  private validateHolidayDates(
-    startDate: string,
-    endDate: string,
-  ): void {
-    if (!this.isValidDate(startDate)) {
+  private validateHolidayDate(date: string): void {
+    if (!this.isValidDate(date)) {
       throw new BadRequestException(
-        'Start date must be a valid date in YYYY-MM-DD format',
-      );
-    }
-
-    if (!this.isValidDate(endDate)) {
-      throw new BadRequestException(
-        'End date must be a valid date in YYYY-MM-DD format',
-      );
-    }
-
-    if (endDate < startDate) {
-      throw new BadRequestException(
-        'End date cannot be earlier than start date',
+        'Holiday date must be a valid date in YYYY-MM-DD format',
       );
     }
   }
@@ -131,14 +114,19 @@ export class HolidayService {
       const yearStart = `${selectedYear}-01-01`;
       const yearEnd = `${selectedYear}-12-31`;
 
-      // Include holidays that overlap the selected year.
-      query
-        .andWhere('holiday.startDate <= :yearEnd', { yearEnd })
-        .andWhere('holiday.endDate >= :yearStart', { yearStart });
+      query.andWhere(
+        'holiday.date >= :yearStart',
+        { yearStart },
+      );
+
+      query.andWhere(
+        'holiday.date <= :yearEnd',
+        { yearEnd },
+      );
     }
 
     return query
-      .orderBy('holiday.startDate', 'ASC')
+      .orderBy('holiday.date', 'ASC')
       .addOrderBy('holiday.name', 'ASC')
       .getMany();
   }
@@ -154,11 +142,8 @@ export class HolidayService {
     const { campusId, username } =
       this.getUserDetails(user);
 
-    // 1. Validate dates.
-    this.validateHolidayDates(
-      dto.startDate,
-      dto.endDate,
-    );
+    // 1. Validate holiday date.
+    this.validateHolidayDate(dto.date);
 
     // 2. Verify authenticated user's campus.
     const campus = await this.campusRepository.findOne({
@@ -195,7 +180,9 @@ export class HolidayService {
     year?: string,
   ) {
     const selectedYear =
-      year === undefined ? new Date().getFullYear() : Number(year);
+      year === undefined
+        ? new Date().getFullYear()
+        : Number(year);
 
     this.validateYear(selectedYear);
 
@@ -219,7 +206,9 @@ export class HolidayService {
     year?: string,
   ) {
     const selectedYear =
-      year === undefined ? new Date().getFullYear() : Number(year);
+      year === undefined
+        ? new Date().getFullYear()
+        : Number(year);
 
     this.validateYear(selectedYear);
 
@@ -233,13 +222,13 @@ export class HolidayService {
       .slice(0, 10);
 
     const upcomingHolidays = holidays.filter(
-      (holiday) => holiday.endDate >= today,
+      (holiday) => holiday.date >= today,
     );
 
     const nextHoliday = upcomingHolidays
       .slice()
       .sort((a, b) =>
-        a.startDate.localeCompare(b.startDate),
+        a.date.localeCompare(b.date),
       )[0] ?? null;
 
     return {
@@ -293,18 +282,11 @@ export class HolidayService {
       campusId,
     );
 
-    // 2. Merge old and new values.
-    const updatedStartDate =
-      dto.startDate ?? holiday.startDate;
+    // 2. Get final date.
+    const updatedDate = dto.date ?? holiday.date;
 
-    const updatedEndDate =
-      dto.endDate ?? holiday.endDate;
-
-    // 3. Validate final dates.
-    this.validateHolidayDates(
-      updatedStartDate,
-      updatedEndDate,
-    );
+    // 3. Validate final date.
+    this.validateHolidayDate(updatedDate);
 
     // 4. Apply updates.
     Object.assign(holiday, dto);
@@ -411,13 +393,8 @@ export class HolidayService {
     let skipped = 0;
 
     for (const source of sourceHolidays) {
-      const startDate = this.changeDateYear(
-        source.startDate,
-        targetYear,
-      );
-
-      const endDate = this.changeDateYear(
-        source.endDate,
+      const date = this.changeDateYear(
+        source.date,
         targetYear,
       );
 
@@ -425,8 +402,7 @@ export class HolidayService {
         (existing) =>
           existing.name.trim().toLowerCase() ===
             source.name.trim().toLowerCase() &&
-          existing.startDate === startDate &&
-          existing.endDate === endDate,
+          existing.date === date,
       );
 
       if (alreadyExists) {
@@ -437,8 +413,7 @@ export class HolidayService {
       const copy = this.holidayRepository.create({
         campusId,
         name: source.name,
-        startDate,
-        endDate,
+        date,
         holidayType: source.holidayType,
         isRecurring: source.isRecurring,
         blockScheduling: source.blockScheduling,

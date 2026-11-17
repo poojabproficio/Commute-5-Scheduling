@@ -5,9 +5,9 @@ import {
   JoinColumn,
   ManyToOne,
 } from 'typeorm';
+
 import { BaseAuditEntity } from '../../../common/entities/base.audit.entity.js';
 import { Campus } from '../../../campus/entities/campus.entity.js';
-
 
 // Allowed holiday classifications
 export type HolidayType =
@@ -16,12 +16,10 @@ export type HolidayType =
   | 'COMPANY'
   | 'OPTIONAL';
 
-@Entity('holiday')
+@Entity('holiday_calendar')
 export class Holiday extends BaseAuditEntity {
 
-  // ==========================================
   // CAMPUS RELATIONSHIP
-  // ==========================================
 
   @Column({
     name: 'campus_id',
@@ -39,9 +37,7 @@ export class Holiday extends BaseAuditEntity {
   })
   campus!: Campus;
 
-  // ==========================================
   // HOLIDAY NAME
-  // ==========================================
 
   @Column({
     name: 'name',
@@ -50,26 +46,15 @@ export class Holiday extends BaseAuditEntity {
   })
   name!: string;
 
-  // ==========================================
-  // HOLIDAY DATES
-  // ==========================================
+  // HOLIDAY DATE
 
   @Column({
-    name: 'start_date',
+    name: 'date',
     type: 'date',
   })
-  startDate!: string;
+  date!: string;
 
-  @Column({
-    name: 'end_date',
-    type: 'date',
-  })
-  endDate!: string;
-
-  // ==========================================
   // HOLIDAY CLASSIFICATION
-  // NATIONAL / REGIONAL / COMPANY / OPTIONAL
-  // ==========================================
 
   @Column({
     name: 'holiday_type',
@@ -78,9 +63,7 @@ export class Holiday extends BaseAuditEntity {
   })
   holidayType!: HolidayType;
 
-  // ==========================================
   // RECURRING HOLIDAY
-  // ==========================================
 
   @Column({
     name: 'is_recurring',
@@ -89,9 +72,7 @@ export class Holiday extends BaseAuditEntity {
   })
   isRecurring!: boolean;
 
-  // ==========================================
   // BLOCK SCHEDULING
-  // ==========================================
 
   @Column({
     name: 'block_scheduling',
@@ -100,9 +81,7 @@ export class Holiday extends BaseAuditEntity {
   })
   blockScheduling!: boolean;
 
-  // ==========================================
   // NOTES
-  // ==========================================
 
   @Column({
     name: 'notes',
@@ -111,5 +90,4 @@ export class Holiday extends BaseAuditEntity {
     nullable: true,
   })
   notes!: string | null;
-
 }
