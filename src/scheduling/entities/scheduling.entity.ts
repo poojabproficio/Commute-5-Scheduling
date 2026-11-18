@@ -33,7 +33,7 @@ export class Schedule extends BaseAuditEntity {
 
   @Column({ name: 'min_working_days_per_week', type: 'tinyint', default: 4 })
   minWorkingDaysPerWeek!: number;
-  @Column({ name: 'block_weekends', type: 'bit', default: true }) blockWeekends!: boolean;
+ 
   @Column({ name: 'block_holidays', type: 'bit', default: true }) blockHolidays!: boolean;
   @Column({ name: 'interlock_login_logout', type: 'bit', default: false }) interlockLoginLogout!: boolean;
   @Column({ name: 'max_advance_days', type: 'smallint', default: 14 }) maxAdvanceDays!: number;

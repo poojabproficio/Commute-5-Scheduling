@@ -130,7 +130,7 @@ export class ScheduleService {
 
       minWorkingDaysPerWeek: 4,
 
-      blockWeekends: true,
+   
       blockHolidays: true,
 
       interlockLoginLogout: false,

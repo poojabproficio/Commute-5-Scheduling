@@ -52,9 +52,6 @@ export class ScheduleDto {
   @Max(7)
   minWorkingDaysPerWeek?: number;
 
-  @IsOptional()
-  @IsBoolean()
-  blockWeekends?: boolean;
 
   @IsOptional()
   @IsBoolean()
