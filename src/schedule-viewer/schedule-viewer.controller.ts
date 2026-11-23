@@ -2,15 +2,16 @@
 import {
   Controller,
   Get,
-    Delete,
+  Post,
   Patch,
+  Delete,
   Query,
   Req,
   UseGuards,
   BadRequestException,
-  
   Param,
   ParseIntPipe,
+  Body,
 } from '@nestjs/common';
 
 import { Request } from 'express';
@@ -23,13 +24,11 @@ import { PermissionsGuard } from '../common/guards/permission.guard.js';
 import { Permissions } from '../common/decorators/permissions.decorator.js';
 import { PermissionModule } from '../common/enums/permission-module.enum.js';
 import { PermissionAction } from '../common/enums/permission-action.enum.js';
-import { UpdateShiftPairDto } from './dto/update-shift-pair.dto.js';
-import {
-  Post,
-  Body,
-} from '@nestjs/common';
 
 import { CreateShiftPairDto } from './dto/create-shift-pair.dto.js';
+import { UpdateShiftPairDto } from './dto/update-shift-pair.dto.js';
+import { UpdateEmployeeScheduleDto } from './dto/update-employee-schedule.dto.js';
+import { CreateEmployeeScheduleDto } from './dto/create-employee-schedule.dto.js';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -47,7 +46,10 @@ export class ScheduleViewerController {
     private readonly scheduleViewerService: ScheduleViewerService,
   ) {}
 
-  // Existing Schedule Viewer API
+  // ==========================================
+  // SCHEDULE VIEWER
+  // ==========================================
+
   @Get()
   @Permissions(PermissionModule.SCHEDULING, PermissionAction.VIEW)
   async getViewerData(
@@ -82,50 +84,130 @@ export class ScheduleViewerController {
     );
   }
 
+  // ==========================================
+  // EMPLOYEE SHIFT OPTIONS
+  // ==========================================
+
+  @Get('employees/:employeeId/shift-options')
+  @Permissions(PermissionModule.SCHEDULING, PermissionAction.VIEW)
+  async getEmployeeShiftOptions(
+    @Req() req: AuthenticatedRequest,
+    @Param('employeeId', ParseIntPipe) employeeId: number,
+    @Query('loginShiftId') loginShiftId?: string,
+  ) {
+    let parsedLoginShiftId: number | undefined;
+
+    if (loginShiftId !== undefined) {
+      parsedLoginShiftId = Number(loginShiftId);
+
+      if (
+        !Number.isSafeInteger(parsedLoginShiftId) ||
+        parsedLoginShiftId <= 0
+      ) {
+        throw new BadRequestException(
+          'loginShiftId must be a valid positive integer.',
+        );
+      }
+    }
+
+    return this.scheduleViewerService.getEmployeeShiftOptions(
+      req.user,
+      employeeId,
+      parsedLoginShiftId,
+    );
+  }
+
+  // ==========================================
+  // SHIFT PAIR APIs
+  // ==========================================
+
   @Post('shift-pairs')
-@Permissions(PermissionModule.SCHEDULING, PermissionAction.CREATE)
-async createShiftPair(
-  @Req() req: AuthenticatedRequest,
-  @Body() dto: CreateShiftPairDto,
-) {
-  return this.scheduleViewerService.createShiftPair(
-    req.user,
-    dto,
-  );
-}
+  @Permissions(PermissionModule.SCHEDULING, PermissionAction.CREATE)
+  async createShiftPair(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: CreateShiftPairDto,
+  ) {
+    return this.scheduleViewerService.createShiftPair(
+      req.user,
+      dto,
+    );
+  }
 
-@Patch('shift-pairs/:id')
-@Permissions(PermissionModule.SCHEDULING, PermissionAction.UPDATE)
-async updateShiftPair(
-  @Req() req: AuthenticatedRequest,
-  @Param('id', ParseIntPipe) id: number,
-  @Body() dto: UpdateShiftPairDto,
-) {
-  return this.scheduleViewerService.updateShiftPair(
-    req.user,
-    id,
-    dto,
-  );
-}
+  @Patch('shift-pairs/:id')
+  @Permissions(PermissionModule.SCHEDULING, PermissionAction.UPDATE)
+  async updateShiftPair(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateShiftPairDto,
+  ) {
+    return this.scheduleViewerService.updateShiftPair(
+      req.user,
+      id,
+      dto,
+    );
+  }
 
-@Delete('shift-pairs/:id')
-@Permissions(PermissionModule.SCHEDULING, PermissionAction.DELETE)
-async deleteShiftPair(
-  @Req() req: AuthenticatedRequest,
-  @Param('id', ParseIntPipe) id: number,
-) {
-  return this.scheduleViewerService.deleteShiftPair(
-    req.user,
-    id,
-  );
-}
+  @Delete('shift-pairs/:id')
+  @Permissions(PermissionModule.SCHEDULING, PermissionAction.DELETE)
+  async deleteShiftPair(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.scheduleViewerService.deleteShiftPair(
+      req.user,
+      id,
+    );
+  }
 
-  // Get employee login/logout shift pairings
   @Get('shift-pairs')
   @Permissions(PermissionModule.SCHEDULING, PermissionAction.VIEW)
   async getShiftPairs(
     @Req() req: AuthenticatedRequest,
   ) {
     return this.scheduleViewerService.getShiftPairs(req.user);
+  }
+
+  // ==========================================
+  // EMPLOYEE DUTY APIs
+  // ==========================================
+
+  @Post('duties')
+  @Permissions(PermissionModule.SCHEDULING, PermissionAction.CREATE)
+  async createDuty(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: CreateEmployeeScheduleDto,
+  ) {
+    return this.scheduleViewerService.createDuty(
+      req.user,
+      dto,
+    );
+  }
+
+
+    @Delete('duties/:id')
+  @Permissions(PermissionModule.SCHEDULING, PermissionAction.DELETE)
+  async deleteDuty(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.scheduleViewerService.deleteDuty(
+      req.user,
+      id,
+    );
+  }
+
+  
+  @Patch('duties/:id')
+  @Permissions(PermissionModule.SCHEDULING, PermissionAction.UPDATE)
+  async updateDuty(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateEmployeeScheduleDto,
+  ) {
+    return this.scheduleViewerService.updateDuty(
+      req.user,
+      id,
+      dto,
+    );
   }
 }

@@ -14,11 +14,11 @@ import { User } from '../user/entities/user.entity.js';
 import { Schedule } from '../scheduling/entities/scheduling.entity.js';
 import { Holiday } from '../holiday/entities/holiday.entity/holiday.entity.js';
 
-import { ScheduleViewerService } from './schedule-viewer.service.js';
-import { ScheduleViewerController } from './schedule-viewer.controller.js';
-
 import { RolePermission } from '../role-permission/entities/role-permission.entity.js';
 import { Permission } from '../permission/entities/permission.entity.js';
+
+import { ScheduleViewerService } from './schedule-viewer.service.js';
+import { ScheduleViewerController } from './schedule-viewer.controller.js';
 
 @Module({
   imports: [
@@ -33,8 +33,8 @@ import { Permission } from '../permission/entities/permission.entity.js';
       User,
       Schedule,
       Holiday,
-        RolePermission,
-  Permission,
+      RolePermission,
+      Permission,
     ]),
   ],
   providers: [ScheduleViewerService],
