@@ -7,29 +7,29 @@ import {
 } from 'typeorm';
 
 import { BaseAuditEntity } from '../../common/entities/base.audit.entity.js';
-import { Employee } from '../../Employee/entities/employee.entity.js';
+import { Campus } from '../../campus/entities/campus.entity.js';
 import { Shift } from '../../Shift/entities/shift.entity.js';
 
 @Entity('pair_shift_mapping')
 @Index(
-  'UQ_pair_shift_mapping_employee_login_shift',
-  ['employee', 'shift'],
+  'UQ_pair_shift_mapping_campus_login_shift',
+  ['campus', 'shift'],
   {
     unique: true,
     where: 'deleted_at IS NULL',
   },
 )
 export class PairShiftMapping extends BaseAuditEntity {
-  @ManyToOne(() => Employee, { nullable: false })
-  @JoinColumn({ name: 'employee_id' })
-  employee!: Employee;
+  @ManyToOne(() => Campus, { nullable: false })
+  @JoinColumn({ name: 'campus_id' })
+  campus!: Campus;
 
-  // The employee's LOGIN shift
+  // Campus-wide LOGIN shift
   @ManyToOne(() => Shift, { nullable: false })
   @JoinColumn({ name: 'shift_id' })
   shift!: Shift;
 
-  // The corresponding LOGOUT shift
+  // Corresponding campus-wide LOGOUT shift
   @ManyToOne(() => Shift, { nullable: false })
   @JoinColumn({ name: 'paired_shift_id' })
   pairedShift!: Shift;

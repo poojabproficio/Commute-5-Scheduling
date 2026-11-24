@@ -9,11 +9,6 @@ export class CreateShiftPairDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  employeeId!: number;
-
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
   shiftId!: number;
 
   @Type(() => Number)
